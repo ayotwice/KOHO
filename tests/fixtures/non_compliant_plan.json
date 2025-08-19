@@ -1,0 +1,127 @@
+{
+  "resource_changes": [
+    {
+      "address": "aws_security_group.insecure_sg",
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "insecure_sg",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "name": "insecure-sg",
+          "ingress": [
+            {
+              "from_port": 22,
+              "to_port": 22,
+              "protocol": "tcp",
+              "cidr_blocks": ["0.0.0.0/0"]
+            },
+            {
+              "from_port": 3306,
+              "to_port": 3306,
+              "protocol": "tcp",
+              "cidr_blocks": ["0.0.0.0/0"]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "address": "aws_db_instance.insecure_database",
+      "mode": "managed",
+      "type": "aws_db_instance",
+      "name": "insecure_database",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "identifier": "insecure-db",
+          "engine": "mysql",
+          "engine_version": "5.7",
+          "storage_encrypted": false,
+          "publicly_accessible": true,
+          "backup_retention_period": 0,
+          "enabled_cloudwatch_logs_exports": []
+        }
+      }
+    },
+    {
+      "address": "aws_kms_key.weak_key",
+      "mode": "managed",
+      "type": "aws_kms_key",
+      "name": "weak_key",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "description": "Weak encryption key",
+          "enable_key_rotation": false,
+          "deletion_window_in_days": 1
+        }
+      }
+    },
+    {
+      "address": "aws_iam_policy.overprivileged",
+      "mode": "managed",
+      "type": "aws_iam_policy",
+      "name": "overprivileged",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "name": "overprivileged-policy",
+          "policy": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": "*",
+                "Resource": "*"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "address": "aws_cloudtrail.insecure_trail",
+      "mode": "managed",
+      "type": "aws_cloudtrail",
+      "name": "insecure_trail",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "name": "insecure-trail",
+          "enable_logging": false,
+          "include_global_service_events": false
+        }
+      }
+    },
+    {
+      "address": "aws_lb_listener.insecure_listener",
+      "mode": "managed",
+      "type": "aws_lb_listener",
+      "name": "insecure_listener",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "port": "443",
+          "protocol": "HTTP",
+          "ssl_policy": "ELBSecurityPolicy-2016-08"
+        }
+      }
+    },
+    {
+      "address": "aws_s3_bucket_public_access_block.insecure_pab",
+      "mode": "managed",
+      "type": "aws_s3_bucket_public_access_block",
+      "name": "insecure_pab",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "block_public_acls": false,
+          "block_public_policy": false,
+          "ignore_public_acls": false,
+          "restrict_public_buckets": false
+        }
+      }
+    }
+  ]
+}

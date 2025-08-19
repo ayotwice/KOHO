@@ -1,0 +1,140 @@
+{
+  "resource_changes": [
+    {
+      "address": "aws_vpc.pci_vpc",
+      "mode": "managed",
+      "type": "aws_vpc",
+      "name": "pci_vpc",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "cidr_block": "10.0.0.0/16",
+          "enable_dns_hostnames": true,
+          "enable_dns_support": true,
+          "tags": {
+            "Name": "pci-compliant-vpc",
+            "Environment": "dev",
+            "Compliance": "PCI-DSS"
+          }
+        }
+      }
+    },
+    {
+      "address": "aws_security_group.web_tier",
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "web_tier",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "name": "pci-web-sg",
+          "ingress": [
+            {
+              "from_port": 443,
+              "to_port": 443,
+              "protocol": "tcp",
+              "cidr_blocks": ["0.0.0.0/0"]
+            }
+          ],
+          "egress": [
+            {
+              "from_port": 0,
+              "to_port": 0,
+              "protocol": "-1",
+              "cidr_blocks": ["0.0.0.0/0"]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "address": "aws_db_instance.pci_database",
+      "mode": "managed",
+      "type": "aws_db_instance",
+      "name": "pci_database",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "identifier": "pci-compliant-db",
+          "engine": "mysql",
+          "engine_version": "8.0",
+          "storage_encrypted": true,
+          "publicly_accessible": false,
+          "backup_retention_period": 7,
+          "enabled_cloudwatch_logs_exports": ["error", "general", "slow_query"],
+          "vpc_security_group_ids": ["sg-12345"]
+        }
+      }
+    },
+    {
+      "address": "aws_kms_key.pci_key",
+      "mode": "managed",
+      "type": "aws_kms_key",
+      "name": "pci_key",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "description": "PCI-DSS compliant encryption key",
+          "enable_key_rotation": true,
+          "deletion_window_in_days": 7
+        }
+      }
+    },
+    {
+      "address": "aws_cloudtrail.pci_trail",
+      "mode": "managed",
+      "type": "aws_cloudtrail",
+      "name": "pci_trail",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "name": "pci-compliance-trail",
+          "enable_logging": true,
+          "include_global_service_events": true,
+          "kms_key_id": "arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012",
+          "event_selector": [
+            {
+              "read_write_type": "All",
+              "include_management_events": true,
+              "data_resource": [
+                {
+                  "type": "AWS::S3::Object",
+                  "values": ["arn:aws:s3:::pci-data-bucket/*"]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "address": "aws_lb_listener.pci_https",
+      "mode": "managed",
+      "type": "aws_lb_listener",
+      "name": "pci_https",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "port": "443",
+          "protocol": "HTTPS",
+          "ssl_policy": "ELBSecurityPolicy-TLS-1-2-2017-01"
+        }
+      }
+    },
+    {
+      "address": "aws_s3_bucket_public_access_block.pci_data_pab",
+      "mode": "managed",
+      "type": "aws_s3_bucket_public_access_block",
+      "name": "pci_data_pab",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "block_public_acls": true,
+          "block_public_policy": true,
+          "ignore_public_acls": true,
+          "restrict_public_buckets": true
+        }
+      }
+    }
+  ]
+}
